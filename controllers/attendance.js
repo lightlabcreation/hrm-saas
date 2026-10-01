@@ -1,5 +1,7 @@
 const db = require('../config/db');
 const { determinePunchStatus } = require('../utils/attendanceHelper');
+const moment = require('moment-timezone');
+const whatsappService = require('../services/whatsappService');
 // Helper: treat 'admin', 'Master Admin', 'hr', and 'hr admin' as admin roles
 const isAdmin = (role) => {
     if (!role) return false;
@@ -126,7 +128,11 @@ exports.processLogs = async (req, res) => {
 };
 
 exports.addManualAttendance = async (req, res) => {
-    const { employeeId, date, inTime, outTime, status } = req.body;
+    const employeeId = req.body.employeeId || req.body.employee_id;
+    const date = req.body.date;
+    const inTime = req.body.inTime || req.body.in_time;
+    const outTime = req.body.outTime || req.body.out_time;
+    const status = req.body.status;
     try {
         // Safety: Verify admin owns this employee
         const [emp] = await db.execute('SELECT company_id FROM employees WHERE id = ?', [employeeId]);
@@ -135,8 +141,8 @@ exports.addManualAttendance = async (req, res) => {
         }
 
         let totalHours = 0;
-        let fIn = inTime ? `${date} ${inTime}:00` : null;
-        let fOut = outTime ? `${date} ${outTime}:00` : null;
+        let fIn = inTime ? (inTime.includes(' ') ? inTime : `${date} ${inTime}:00`) : null;
+        let fOut = outTime ? (outTime.includes(' ') ? outTime : `${date} ${outTime}:00`) : null;
         if (fIn && fOut) {
             totalHours = ((new Date(fOut) - new Date(fIn)) / (1000 * 60 * 60)).toFixed(2);
         }
@@ -162,10 +168,125 @@ exports.addManualAttendance = async (req, res) => {
         }
 
         await logAudit(req.user.id, 'ADD_MANUAL_ATTENDANCE', employeeId, { date, status });
+        
+        // Trigger Async WhatsApp Notification
+        whatsappService.sendAttendanceNotification(req.user.company_id, {
+            employeeId,
+            date,
+            time: fIn ? (fIn.includes(' ') ? fIn.split(' ')[1] : fIn) : 'Manual Entry',
+            status: finalStatus
+        });
+
         res.json({ message: 'Added successfully' });
     } catch (err) {
         console.error('❌ SQL Error (addManualAttendance):', err);
         res.status(500).json({ message: 'Failed', error: err.message });
+    }
+};
+
+exports.punchAttendance = async (req, res) => {
+    try {
+        const companyId = req.user.company_id;
+        let employeeId = req.user.employee_id;
+
+        // If employeeId not in token, resolve from employees table
+        if (!employeeId) {
+            const [emp] = await db.execute('SELECT id, company_id FROM employees WHERE email = (SELECT email FROM users WHERE id = ?)', [req.user.id]);
+            if (emp.length > 0) {
+                employeeId = emp[0].id;
+            } else if (req.body.employee_id || req.body.employeeId) {
+                employeeId = req.body.employee_id || req.body.employeeId;
+            }
+        }
+
+        if (!employeeId) {
+            return res.status(400).json({ message: 'Employee profile not linked to user account.' });
+        }
+
+        const now = moment().tz("Asia/Kolkata");
+        const today = req.body.date || now.format("YYYY-MM-DD");
+        const currentTimeStr = now.format("YYYY-MM-DD HH:mm:ss");
+
+        // Check if attendance already exists for today
+        const [existing] = await db.execute(
+            'SELECT id, in_time, out_time FROM attendance WHERE employee_id = ? AND date = ?',
+            [employeeId, today]
+        );
+
+        if (existing.length === 0) {
+            // Punch In
+            let fIn = req.body.in_time;
+            if (!fIn) {
+                fIn = currentTimeStr;
+            } else if (!fIn.includes(' ') && !fIn.includes('T')) {
+                fIn = `${today} ${fIn.length === 5 ? fIn + ':00' : fIn}`;
+            }
+
+            let finalStatus = req.body.status;
+            if (!finalStatus) {
+                finalStatus = await determinePunchStatus(companyId, fIn);
+            }
+            if (!finalStatus) finalStatus = 'present';
+
+            const sql = 'INSERT INTO attendance (employee_id, date, in_time, status, company_id) VALUES (?, ?, ?, ?, ?)';
+            await db.execute(sql, [employeeId, today, fIn, finalStatus, companyId]);
+
+            // Trigger Async WhatsApp Notification for Punch In
+            whatsappService.sendAttendanceNotification(companyId, {
+                employeeId,
+                date: today,
+                time: fIn.includes(' ') ? fIn.split(' ')[1] : fIn,
+                status: `${finalStatus} (Punch In)`
+            });
+
+            return res.json({
+                success: true,
+                type: 'punch_in',
+                message: 'Punch IN recorded successfully!',
+                in_time: fIn
+            });
+        } else if (!existing[0].out_time) {
+            // Punch Out
+            const fIn = existing[0].in_time;
+            let fOut = req.body.out_time;
+            if (!fOut) {
+                fOut = currentTimeStr;
+            } else if (!fOut.includes(' ') && !fOut.includes('T')) {
+                fOut = `${today} ${fOut.length === 5 ? fOut + ':00' : fOut}`;
+            }
+
+            let totalHours = 0;
+            if (fIn && fOut) {
+                const diff = new Date(fOut.replace(' ', 'T')) - new Date(fIn.toString().replace(' ', 'T'));
+                totalHours = Math.max(0, (diff / (1000 * 60 * 60))).toFixed(2);
+            }
+
+            const sql = 'UPDATE attendance SET out_time = ?, total_hours = ? WHERE id = ?';
+            await db.execute(sql, [fOut, totalHours, existing[0].id]);
+
+            // Trigger Async WhatsApp Notification for Punch Out
+            whatsappService.sendAttendanceNotification(companyId, {
+                employeeId,
+                date: today,
+                time: fOut.includes(' ') ? fOut.split(' ')[1] : fOut,
+                status: `Punch Out (${totalHours} hrs)`
+            });
+
+            return res.json({
+                success: true,
+                type: 'punch_out',
+                message: 'Punch OUT recorded successfully!',
+                out_time: fOut,
+                total_hours: totalHours
+            });
+        } else {
+            return res.status(400).json({
+                message: 'You have already punched in and out for today.'
+            });
+        }
+    } catch (err) {
+        console.error('❌ SQL Error (punchAttendance):', err);
+        res.status(500).json({ message: 'Failed to record attendance', error: err.message });
     }
 };
 
@@ -243,8 +364,6 @@ exports.bulkMarkAttendance = async (req, res) => {
         res.status(500).json({ message: 'Failed', error: err.message });
     }
 };
-
-const moment = require('moment-timezone');
 
 exports.getDashboardStats = async (req, res) => {
     try {

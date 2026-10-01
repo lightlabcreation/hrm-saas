@@ -217,7 +217,7 @@ async function sendWelcomeTrialEmail({ to, name, companyName, email, password, t
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Nexus HRM Pro - 7 Days Free Trial</title>
+    <title>Welcome to HRM Software Pro - 7 Days Free Trial</title>
     <style>
         body { margin: 0; padding: 0; background-color: #0b0f19; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #cbd5e1; }
         .wrapper { width: 100%; max-width: 620px; margin: 0 auto; background-color: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; overflow: hidden; margin-top: 24px; margin-bottom: 24px; }
@@ -241,7 +241,7 @@ async function sendWelcomeTrialEmail({ to, name, companyName, email, password, t
 <body>
     <div class="wrapper">
         <div class="header">
-            <h1 class="logo-text">⚡ NEXUS HRM PRO</h1>
+            <h1 class="logo-text">⚡ HRM SOFTWARE PRO</h1>
             <div class="logo-sub">${senderName}</div>
             <div class="badge">🎉 7-Day Free Trial Activated</div>
         </div>
@@ -308,7 +308,7 @@ async function sendWelcomeTrialEmail({ to, name, companyName, email, password, t
         await sendSystemEmail({
             to: to,
             toName: name,
-            subject: `🎉 Welcome to Nexus HRM Pro - Your 7-Day Free Trial is Active!`,
+            subject: `🎉 Welcome to HRM Software Pro - Your 7-Day Free Trial is Active!`,
             htmlContent: htmlContent
         });
         return true;
@@ -342,7 +342,7 @@ async function sendSubscriptionSuccessEmail({ to, name, companyName, email, pass
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subscription Activated - Nexus HRM Pro</title>
+    <title>Subscription Activated - HRM Software Pro</title>
     <style>
         body { margin: 0; padding: 0; background-color: #0b0f19; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #cbd5e1; }
         .wrapper { width: 100%; max-width: 620px; margin: 0 auto; background-color: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; overflow: hidden; margin-top: 24px; margin-bottom: 24px; }
@@ -364,7 +364,7 @@ async function sendSubscriptionSuccessEmail({ to, name, companyName, email, pass
 <body>
     <div class="wrapper">
         <div class="header">
-            <h1 class="logo-text">⚡ NEXUS HRM PRO</h1>
+            <h1 class="logo-text">⚡ HRM SOFTWARE PRO</h1>
             <div class="logo-sub">${senderName}</div>
             <div class="badge">💳 Subscription Payment Confirmed</div>
         </div>
@@ -372,7 +372,7 @@ async function sendSubscriptionSuccessEmail({ to, name, companyName, email, pass
         <div class="content">
             <h2 class="greeting">Thank You ${name}! 🎉</h2>
             <p class="lead">
-                Your subscription for <strong style="color: #ffffff;">${companyName}</strong> has been successfully activated. Thank you for partnering with Nexus HRM Pro for your enterprise workforce management.
+                Your subscription for <strong style="color: #ffffff;">${companyName}</strong> has been successfully activated. Thank you for partnering with HRM Software Pro for your enterprise workforce management.
             </p>
 
             <div class="cred-box">
@@ -528,14 +528,14 @@ async function sendPasswordResetOtpEmail({ to, name, otp }) {
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🔐 Nexus HRM Security</div>
+            <div class="logo">🔐 HRM Software Security</div>
             <div style="font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 600;">Password Reset Code</div>
         </div>
 
         <div class="content">
             <div class="greeting">Hello ${name || 'User'},</div>
             <p style="font-size: 14px; color: #cbd5e1; line-height: 1.6; margin: 0 0 16px 0;">
-                We received a request to reset the password for your Nexus HRM account (<strong>${to}</strong>).
+                We received a request to reset the password for your HRM Software account (<strong>${to}</strong>).
             </p>
 
             <div class="otp-box">
@@ -567,7 +567,7 @@ async function sendPasswordResetOtpEmail({ to, name, otp }) {
         await sendSystemEmail({
             to: to,
             toName: name || to,
-            subject: `🔐 Your 6-Digit Password Reset Code: ${otp} - Nexus HRM`,
+            subject: `🔐 Your 6-Digit Password Reset Code: ${otp} - HRM Software`,
             htmlContent: htmlContent
         });
         return true;
@@ -606,7 +606,7 @@ async function sendPasswordChangedConfirmationEmail({ to, name }) {
         <div class="content">
             <p style="font-size: 15px; color: #ffffff; margin-top: 0;">Hello <strong>${name || 'User'}</strong>,</p>
             <p style="font-size: 14px; color: #cbd5e1; line-height: 1.6;">
-                The password for your Nexus HRM account (<strong>${to}</strong>) has been updated successfully.
+                The password for your HRM Software account (<strong>${to}</strong>) has been updated successfully.
             </p>
             <p style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
                 You can now log in to your dashboard with your new password.
@@ -629,7 +629,7 @@ async function sendPasswordChangedConfirmationEmail({ to, name }) {
         await sendSystemEmail({
             to: to,
             toName: name || to,
-            subject: `✅ Security Alert: Your Password Was Changed - Nexus HRM`,
+            subject: `✅ Security Alert: Your Password Was Changed - HRM Software`,
             htmlContent: htmlContent
         });
         return true;

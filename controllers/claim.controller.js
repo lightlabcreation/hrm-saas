@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const whatsappService = require('../services/whatsappService');
 
 exports.getClaims = async (req, res) => {
     try {
@@ -64,6 +65,15 @@ exports.submitClaim = async (req, res) => {
             );
         }
 
+        // Trigger Async WhatsApp Notification for Claim Submission
+        whatsappService.sendClaimNotification(company_id, {
+            type: 'SUBMITTED',
+            employeeId: employee_id,
+            employeeName: employeeName,
+            claimTitle: claim_type || 'Expense Claim',
+            amount: amount || 0
+        });
+
         res.json({ message: 'Claim submitted successfully', id: result.insertId });
     } catch (err) {
         console.error('Error submitting claim:', err);
@@ -77,14 +87,31 @@ exports.updateClaimStatus = async (req, res) => {
         const { status } = req.body;
         const { company_id } = req.user;
 
+        const [claims] = await db.execute(
+            'SELECT * FROM claims WHERE id = ? AND company_id = ?',
+            [id, company_id]
+        );
+
+        if (claims.length === 0) {
+            return res.status(404).json({ message: 'Claim not found' });
+        }
+
+        const claim = claims[0];
+
         const [result] = await db.execute(
             'UPDATE claims SET status = ? WHERE id = ? AND company_id = ?',
             [status, id, company_id]
         );
 
-        if (result.affectedRows === 0) {
-             return res.status(404).json({ message: 'Claim not found' });
-        }
+        // Trigger Async WhatsApp Notification for Employee Claim Status Update
+        whatsappService.sendClaimNotification(company_id, {
+            type: 'STATUS_UPDATED',
+            employeeId: claim.employee_id,
+            employeeName: claim.employee_name,
+            claimTitle: claim.claim_type,
+            amount: claim.amount,
+            status: status
+        });
 
         res.json({ message: `Claim status updated to ${status}` });
     } catch (err) {

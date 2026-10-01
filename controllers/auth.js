@@ -142,13 +142,13 @@ exports.login = async (req, res) => {
         // Fetch Localization Settings
         let localization = {};
         try {
-            const [globalRows] = await db.execute('SELECT timezone, currency, date_format, language FROM global_settings LIMIT 1');
-            const globalSettings = globalRows[0] || { timezone: 'UTC', currency: 'USD', date_format: 'YYYY-MM-DD', language: 'English' };
+            const [globalRows] = await db.execute('SELECT timezone, currency, date_format, language, country FROM global_settings LIMIT 1');
+            const globalSettings = globalRows[0] || { timezone: 'UTC', currency: 'USD', date_format: 'YYYY-MM-DD', language: 'English', country: 'India' };
 
             let companySettings = {};
             if (user.company_id) {
                 const [companyRows] = await db.execute(
-                    'SELECT timezone, currency, date_format, language FROM settings WHERE company_id = ? OR (company_id IS NULL AND id = 1) ORDER BY company_id DESC LIMIT 1',
+                    'SELECT timezone, currency, date_format, language, country FROM settings WHERE company_id = ? OR (company_id IS NULL AND id = 1) ORDER BY company_id DESC LIMIT 1',
                     [user.company_id]
                 );
                 companySettings = companyRows[0] || {};
@@ -158,7 +158,8 @@ exports.login = async (req, res) => {
                 timezone: companySettings.timezone || globalSettings.timezone,
                 currency: companySettings.currency || globalSettings.currency,
                 date_format: companySettings.date_format || globalSettings.date_format,
-                language: companySettings.language || globalSettings.language
+                language: companySettings.language || globalSettings.language,
+                country: companySettings.country || globalSettings.country || 'India'
             };
         } catch (setErr) {
             console.error('Error fetching localization settings:', setErr);

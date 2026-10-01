@@ -49,16 +49,8 @@ async function generatePayslipPDF(payroll, employee, companySettings) {
         const overtimePay = Number(payroll.overtime || 0);
         const otherDeductions = Math.max(0, Number(deductions) - employeeContribution - advanceDeduction);
 
-        const currencySymbolMap = {
-            'INR': '₹',
-            'USD': '$',
-            'EUR': '€',
-            'GBP': '£',
-            'AED': 'AED ',
-            'ZAR': 'R ',
-            'SGD': 'S$'
-        };
-        const currSymbol = currencySymbolMap[companySettings.currency] || companySettings.currency || '₹';
+        const { CURRENCY_SYMBOLS } = require('../config/countryConfig');
+        const currSymbol = CURRENCY_SYMBOLS[companySettings.currency] || companySettings.currency || '₹';
 
         const htmlContent = `
         <!DOCTYPE html>

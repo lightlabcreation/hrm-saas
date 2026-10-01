@@ -66,6 +66,8 @@ exports.saveEmailSettings = async (req, res) => {
     }
 };
 
+const https = require('https');
+
 exports.testEmailConnection = async (req, res) => {
     try {
         const companyId = req.user.company_id;
@@ -77,7 +79,54 @@ exports.testEmailConnection = async (req, res) => {
 
         const settings = rows[0];
         const password = decrypt(settings.smtp_pass);
+        const recipient = settings.sender_email || req.user.email;
 
+        // If password is a Brevo REST API Key (starts with xkeysib-)
+        if (password && password.startsWith('xkeysib-')) {
+            const payload = JSON.stringify({
+                sender: { name: settings.sender_name || 'HRM Software', email: settings.sender_email },
+                to: [{ email: recipient }],
+                subject: 'Test Email from HRM Software',
+                htmlContent: '<p>Your Brevo API Key is working perfectly! You are now ready to send e-payslips and automated messages.</p>'
+            });
+
+            await new Promise((resolve, reject) => {
+                const reqApi = https.request({
+                    hostname: 'api.brevo.com',
+                    port: 443,
+                    path: '/v3/smtp/email',
+                    method: 'POST',
+                    headers: {
+                        'accept': 'application/json',
+                        'api-key': password,
+                        'content-type': 'application/json',
+                        'content-length': Buffer.byteLength(payload)
+                    }
+                }, (resApi) => {
+                    let resBody = '';
+                    resApi.on('data', d => resBody += d);
+                    resApi.on('end', () => {
+                        if (resApi.statusCode >= 200 && resApi.statusCode < 300) {
+                            resolve(resBody);
+                        } else {
+                            try {
+                                const parsed = JSON.parse(resBody);
+                                reject(new Error(parsed.message || resBody));
+                            } catch (e) {
+                                reject(new Error(`Brevo API Error (${resApi.statusCode}): ${resBody}`));
+                            }
+                        }
+                    });
+                });
+                reqApi.on('error', reject);
+                reqApi.write(payload);
+                reqApi.end();
+            });
+
+            return res.json({ success: true, message: `Brevo Connection successful! Test email sent to ${recipient}` });
+        }
+
+        // Standard SMTP Transporter (Gmail App Password, Brevo SMTP Key xsmtpib-, Resend re_...)
         const transporter = nodemailer.createTransport({
             host: settings.smtp_host,
             port: parseInt(settings.smtp_port),
@@ -90,19 +139,39 @@ exports.testEmailConnection = async (req, res) => {
 
         await transporter.verify(); // Test connection
         
-        // Send a test email to the configured sender_email (or user email if available)
-        const recipient = req.user.email || settings.sender_email;
-        
         await transporter.sendMail({
-            from: `"${settings.sender_name}" <${settings.sender_email}>`,
+            from: `"${settings.sender_name || 'HRM Software'}" <${settings.sender_email}>`,
             to: recipient,
-            subject: 'Test Email from HRM SaaS',
-            text: 'Your SMTP settings are working perfectly! You are now ready to send e-payslips.'
+            subject: 'Test Email from HRM Software',
+            text: 'Your SMTP settings are working perfectly! You are now ready to send e-payslips and notifications.'
         });
 
-        res.json({ success: true, message: 'Connection successful. Test email sent!' });
+        res.json({ success: true, message: `SMTP Connection successful! Test email sent to ${recipient}` });
     } catch (err) {
         console.error('Test email failed:', err);
         res.status(400).json({ error: 'Connection failed: ' + err.message });
+    }
+};
+
+exports.deleteEmailSettings = async (req, res) => {
+    try {
+        const companyId = req.user.company_id;
+        await db.execute('DELETE FROM company_email_settings WHERE company_id = ?', [companyId]);
+        res.json({ success: true, message: 'SMTP settings removed successfully.' });
+    } catch (err) {
+        console.error('Error deleting email settings:', err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.toggleEmailStatus = async (req, res) => {
+    try {
+        const companyId = req.user.company_id;
+        const { is_active } = req.body;
+        await db.execute('UPDATE company_email_settings SET is_active = ?, updated_at = NOW() WHERE company_id = ?', [is_active ? 1 : 0, companyId]);
+        res.json({ success: true, message: `SMTP settings marked as ${is_active ? 'Active' : 'Inactive'}.` });
+    } catch (err) {
+        console.error('Error toggling email settings:', err);
+        res.status(500).json({ error: err.message });
     }
 };

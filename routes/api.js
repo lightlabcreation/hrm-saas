@@ -86,8 +86,9 @@ router.post('/employees/:id/reset-password', auth, subscriptionGuard, adminOnly,
 
 
 
-// Attendance (Admin-only for mutations)
+// Attendance (Admin-only for mutations, punch for all staff)
 router.get('/attendance', auth, subscriptionGuard, attendanceController.getAttendance);
+router.post('/attendance/punch', auth, subscriptionGuard, attendanceController.punchAttendance);
 router.delete('/attendance/reset', auth, subscriptionGuard, adminOnly, attendanceController.resetAttendance);
 router.post('/attendance/manual', auth, subscriptionGuard, adminOnly, attendanceController.addManualAttendance);
 router.post('/attendance/bulk', auth, subscriptionGuard, adminOnly, attendanceController.bulkMarkAttendance);
@@ -159,6 +160,8 @@ router.delete('/payroll/:id', auth, subscriptionGuard, adminOnly, payrollControl
 // Email Settings
 router.get('/settings/email', auth, adminOnly, emailSettingsController.getEmailSettings);
 router.post('/settings/email', auth, adminOnly, emailSettingsController.saveEmailSettings);
+router.delete('/settings/email', auth, adminOnly, emailSettingsController.deleteEmailSettings);
+router.patch('/settings/email/toggle', auth, adminOnly, emailSettingsController.toggleEmailStatus);
 router.post('/settings/email/test', auth, adminOnly, emailSettingsController.testEmailConnection);
 
 // Email Queue
@@ -190,4 +193,25 @@ router.get('/support/tickets', auth, supportController.getMyTickets);
 router.get('/support/tickets/:id/messages', auth, supportController.getTicketMessages);
 router.post('/support/tickets/:id/messages', auth, upload.single('attachment'), supportController.sendAdminMessage);
 
+// WhatsApp Settings & Connectivity (Admin Only)
+const whatsappController = require('../controllers/whatsapp.controller');
+router.get('/settings/whatsapp', auth, adminOnly, whatsappController.getStatus);
+router.post('/settings/whatsapp/connect', auth, adminOnly, whatsappController.connect);
+router.post('/settings/whatsapp/disconnect', auth, adminOnly, whatsappController.disconnect);
+router.put('/settings/whatsapp/preferences', auth, adminOnly, whatsappController.updatePreferences);
+router.get('/settings/whatsapp/logs', auth, adminOnly, whatsappController.getLogs);
+router.post('/settings/whatsapp/test', auth, adminOnly, whatsappController.sendTestMessage);
+
+// Audit Logs (Company Admin)
+const auditController = require('../controllers/audit.controller');
+router.get('/audit-logs', auth, adminOnly, auditController.getAuditLogs);
+router.get('/audit-logs/stats', auth, adminOnly, auditController.getAuditStats);
+
+// Announcements & Personal Messages (Admin Only)
+const messagingController = require('../controllers/messaging.controller');
+router.get('/messaging/recipients', auth, adminOnly, messagingController.getRecipientsData);
+router.post('/messaging/send', auth, adminOnly, messagingController.sendMessage);
+router.get('/messaging/history', auth, adminOnly, messagingController.getHistory);
+
 module.exports = router;
+

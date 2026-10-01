@@ -26,8 +26,8 @@ exports.getSettings = async (req, res) => {
                 // Insert a new row for this company
                 const insertSql = `
                     INSERT INTO settings 
-                    (company_id, machine_ip, machine_port, machine_alias, sync_interval, late_deduction, late_deduction_amount, salary_cycle, salary_cycle_start_date, ot_multiplier, business_name, business_address, business_phone, business_email, standard_start_time, timezone, currency, date_format, language, grace_period_mins, standard_end_time, weekends, notify_leaves, notify_claims, notify_password_resets)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (company_id, machine_ip, machine_port, machine_alias, sync_interval, late_deduction, late_deduction_amount, salary_cycle, salary_cycle_start_date, ot_multiplier, business_name, business_address, business_phone, business_email, standard_start_time, timezone, currency, date_format, language, country, grace_period_mins, standard_end_time, weekends, notify_leaves, notify_claims, notify_password_resets)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `;
                 const insertParams = [
                     companyId,
@@ -46,9 +46,10 @@ exports.getSettings = async (req, res) => {
                     companyInfo.email || defaultSettings.business_email || '',
                     defaultSettings.standard_start_time || '09:00:00',
                     defaultSettings.timezone || 'Asia/Kolkata',
-                    defaultSettings.currency || 'ZAR',
+                    defaultSettings.currency || 'INR',
                     defaultSettings.date_format || 'DD/MM/YYYY',
                     defaultSettings.language || 'English',
+                    defaultSettings.country || 'India',
                     defaultSettings.grace_period_mins || 15,
                     defaultSettings.standard_end_time || '17:00:00',
                     defaultSettings.weekends || 'Saturday,Sunday',
@@ -90,7 +91,7 @@ exports.updateSettings = async (req, res) => {
         machine_ip, machine_port, machine_alias, sync_interval, 
         late_deduction, late_deduction_amount, salary_cycle, salary_cycle_start_date, ot_multiplier, standard_start_time,
         business_name, business_address, business_phone, business_email,
-        admin_password, currency, timezone, date_format, language,
+        admin_password, currency, timezone, date_format, language, country,
         grace_period_mins, standard_end_time, weekends,
         notify_leaves, notify_claims, notify_password_resets,
         contribution_enabled, default_employee_contribution_percentage, default_employer_contribution_percentage
@@ -108,7 +109,7 @@ exports.updateSettings = async (req, res) => {
             late_deduction_amount,
             salary_cycle, salary_cycle_start_date, ot_multiplier, standard_start_time,
             business_name, business_address, business_phone, business_email,
-            currency, timezone, date_format, language,
+            currency, timezone, date_format, language, country,
             grace_period_mins, standard_end_time, weekends,
             notify_leaves: notify_leaves !== undefined ? (notify_leaves ? 1 : 0) : undefined,
             notify_claims: notify_claims !== undefined ? (notify_claims ? 1 : 0) : undefined,
@@ -236,41 +237,62 @@ exports.getGlobalSettings = async (req, res) => {
 exports.updateGlobalSettings = async (req, res) => {
     try {
         const {
-            platform_name, powered_by, support_email, timezone, currency, date_format, language, notifications,
+            platform_name, powered_by, support_email, timezone, currency, date_format, language, country, notifications,
             company_name, company_logo, company_address, contact_number, about_us, company_website,
             social_linkedin, social_facebook, social_instagram, social_twitter, social_youtube,
             privacy_policy, terms_conditions, copyright_text, whatsapp_number
         } = req.body;
-        const [rows] = await db.execute('SELECT id FROM global_settings LIMIT 1');
+        const [rows] = await db.execute('SELECT * FROM global_settings LIMIT 1');
+        const current = rows[0] || {};
         
-        const notifJson = notifications ? JSON.stringify(notifications) : null;
+        const notifJson = notifications !== undefined ? JSON.stringify(notifications) : (current.notifications || null);
 
         if (rows.length > 0) {
             await db.execute(
                 `UPDATE global_settings SET 
-                    platform_name=?, powered_by=?, support_email=?, timezone=?, currency=?, date_format=?, language=?, notifications=?,
+                    platform_name=?, powered_by=?, support_email=?, timezone=?, currency=?, date_format=?, language=?, country=?, notifications=?,
                     company_name=?, company_logo=?, company_address=?, contact_number=?, about_us=?, company_website=?,
                     social_linkedin=?, social_facebook=?, social_instagram=?, social_twitter=?, social_youtube=?,
                     privacy_policy=?, terms_conditions=?, copyright_text=?, whatsapp_number=?
                 WHERE id=?`,
                 [
-                    platform_name, powered_by || 'Kiaan Technology', support_email, timezone, currency, date_format, language, notifJson,
-                    company_name || null, company_logo || null, company_address || null, contact_number || null, about_us || null, company_website || 'https://kiaantechnology.com/',
-                    social_linkedin || null, social_facebook || null, social_instagram || null, social_twitter || null, social_youtube || null,
-                    privacy_policy || null, terms_conditions || null, copyright_text || null, whatsapp_number || null,
+                    platform_name !== undefined ? platform_name : (current.platform_name || 'Nexus HRM Pro'),
+                    powered_by !== undefined ? powered_by : (current.powered_by || 'Kiaan Technology'),
+                    support_email !== undefined ? support_email : (current.support_email || 'support@nexushrm.com'),
+                    timezone !== undefined ? timezone : (current.timezone || 'Asia/Kolkata'),
+                    currency !== undefined ? currency : (current.currency || 'INR'),
+                    date_format !== undefined ? date_format : (current.date_format || 'DD/MM/YYYY'),
+                    language !== undefined ? language : (current.language || 'English'),
+                    country !== undefined ? country : (current.country || 'India'),
+                    notifJson,
+                    company_name !== undefined ? company_name : (current.company_name || null),
+                    company_logo !== undefined ? company_logo : (current.company_logo || null),
+                    company_address !== undefined ? company_address : (current.company_address || null),
+                    contact_number !== undefined ? contact_number : (current.contact_number || null),
+                    about_us !== undefined ? about_us : (current.about_us || null),
+                    company_website !== undefined ? company_website : (current.company_website || 'https://kiaantechnology.com/'),
+                    social_linkedin !== undefined ? social_linkedin : (current.social_linkedin || null),
+                    social_facebook !== undefined ? social_facebook : (current.social_facebook || null),
+                    social_instagram !== undefined ? social_instagram : (current.social_instagram || null),
+                    social_twitter !== undefined ? social_twitter : (current.social_twitter || null),
+                    social_youtube !== undefined ? social_youtube : (current.social_youtube || null),
+                    privacy_policy !== undefined ? privacy_policy : (current.privacy_policy || null),
+                    terms_conditions !== undefined ? terms_conditions : (current.terms_conditions || null),
+                    copyright_text !== undefined ? copyright_text : (current.copyright_text || null),
+                    whatsapp_number !== undefined ? whatsapp_number : (current.whatsapp_number || null),
                     rows[0].id
                 ]
             );
         } else {
             await db.execute(
                 `INSERT INTO global_settings 
-                    (platform_name, powered_by, support_email, timezone, currency, date_format, language, notifications,
+                    (platform_name, powered_by, support_email, timezone, currency, date_format, language, country, notifications,
                      company_name, company_logo, company_address, contact_number, about_us, company_website,
                      social_linkedin, social_facebook, social_instagram, social_twitter, social_youtube,
                      privacy_policy, terms_conditions, copyright_text, whatsapp_number) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                    platform_name, powered_by || 'Kiaan Technology', support_email, timezone, currency, date_format, language, notifJson,
+                    platform_name || 'Nexus HRM Pro', powered_by || 'Kiaan Technology', support_email || 'support@nexushrm.com', timezone || 'Asia/Kolkata', currency || 'INR', date_format || 'DD/MM/YYYY', language || 'English', country || 'India', notifJson,
                     company_name || null, company_logo || null, company_address || null, contact_number || null, about_us || null, company_website || 'https://kiaantechnology.com/',
                     social_linkedin || null, social_facebook || null, social_instagram || null, social_twitter || null, social_youtube || null,
                     privacy_policy || null, terms_conditions || null, copyright_text || null, whatsapp_number || null

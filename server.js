@@ -17,6 +17,8 @@ const emailQueueWorker = require('./utils/emailQueueWorker');
 // Start the email queue background worker
 emailQueueWorker.startWorker();
 
+// HRM Backend Server Instance
+
 const app = express();
 app.set('trust proxy', 1);
 const server = http.createServer(app);
@@ -37,7 +39,17 @@ const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173,http:
     .filter(Boolean);
 
 const corsOptions = {
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (
+            allowedOrigins.indexOf(origin) !== -1 ||
+            allowedOrigins.includes('*') ||
+            /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$/.test(origin)
+        ) {
+            return callback(null, true);
+        }
+        return callback(null, true);
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true
 };
@@ -48,6 +60,18 @@ const io = new Server(server, {
         methods: ["GET", "POST"],
         credentials: true
     }
+});
+
+const whatsappService = require('./services/whatsappService');
+whatsappService.setIO(io);
+app.set('io', io);
+
+io.on('connection', (socket) => {
+    socket.on('join_company', (companyId) => {
+        if (companyId) {
+            socket.join(`company_${companyId}`);
+        }
+    });
 });
 
 // IMPORTANT: CORS must be applied before Rate Limiting!
@@ -166,11 +190,13 @@ const apiRoutes = require('./routes/api');
 const superadminRoutes = require('./routes/superadmin.routes');
 const internalRoutes = require('./routes/internal.routes');
 const paymentRoutes = require('./routes/payment.routes');
+const backupRoutes = require('./routes/backup.routes');
 
 // ─── Apply auth rate limiter to login/register routes ───
 app.use('/api/login', authLimiter);
 app.use('/api/register', authLimiter);
 
+app.use('/api/backup', backupRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/superadmin', superadminRoutes);
 app.use('/api/internal', internalRoutes);
@@ -492,9 +518,11 @@ const initDB = async () => {
             { table: 'payroll', column: 'employer_contribution', type: 'DECIMAL(10,2) DEFAULT 0.00' },
             { table: 'payroll', column: 'total_contribution', type: 'DECIMAL(10,2) DEFAULT 0.00' },
             { table: 'payroll', column: 'cpf_employee', type: 'DECIMAL(10,2) DEFAULT 0.00' },
-            // Global Settings powered_by and company_website
+            // Global Settings powered_by, company_website, and country
             { table: 'global_settings', column: 'powered_by', type: 'VARCHAR(255) DEFAULT "Kiaan Technology"' },
-            { table: 'global_settings', column: 'company_website', type: 'VARCHAR(255) DEFAULT "https://kiaantechnology.com/"' }
+            { table: 'global_settings', column: 'company_website', type: 'VARCHAR(255) DEFAULT "https://kiaantechnology.com/"' },
+            { table: 'global_settings', column: 'country', type: 'VARCHAR(100) DEFAULT "India"' },
+            { table: 'settings', column: 'country', type: 'VARCHAR(100) DEFAULT "India"' }
         ];
 
         for (const col of columns) {
@@ -712,6 +740,33 @@ const initDB = async () => {
             )
         `);
 
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS broadcast_messages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                company_id INT NOT NULL,
+                sender_id INT,
+                sender_name VARCHAR(255),
+                message_type ENUM('broadcast', 'personal') NOT NULL DEFAULT 'broadcast',
+                channels VARCHAR(50) NOT NULL DEFAULT 'both',
+                target_audience VARCHAR(100) NOT NULL DEFAULT 'all',
+                target_department VARCHAR(100) NULL,
+                target_employee_id INT NULL,
+                target_employee_name VARCHAR(255) NULL,
+                subject VARCHAR(255) NOT NULL,
+                message_text TEXT NOT NULL,
+                priority ENUM('normal', 'important', 'urgent') NOT NULL DEFAULT 'normal',
+                total_recipients INT NOT NULL DEFAULT 0,
+                email_sent_count INT NOT NULL DEFAULT 0,
+                email_failed_count INT NOT NULL DEFAULT 0,
+                whatsapp_sent_count INT NOT NULL DEFAULT 0,
+                whatsapp_failed_count INT NOT NULL DEFAULT 0,
+                status VARCHAR(50) NOT NULL DEFAULT 'COMPLETED',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_msg_company (company_id),
+                INDEX idx_msg_created (created_at)
+            )
+        `);
+
         // Ensure advance_installment column on employees
         try {
             await db.execute('ALTER TABLE employees ADD COLUMN advance_installment DECIMAL(10,2) DEFAULT NULL');
@@ -820,6 +875,26 @@ server.listen(PORT, async () => {
     await initDB();
     console.log(`🚀 Kiaan HRM Pro Backend is running on port ${PORT}`);
     
-    // Start Biometric Sync Scheduler after DB is up
-    // initBiometricScheduler(); // DISABLED: System is now software-only
+    // Auto-restore active WhatsApp sessions safely in background
+    whatsappService.init(io).catch(err => {
+        console.error('⚠️ WhatsApp auto-restore encountered an error:', err.message);
+    });
 });
+
+// Graceful Shutdown
+const gracefulShutdown = () => {
+    console.log('🛑 Server shutting down. Cleaning WhatsApp sessions...');
+    try {
+        for (const [companyId, sess] of whatsappService.sessions.entries()) {
+            if (sess && sess.socket) {
+                sess.socket.end();
+            }
+        }
+    } catch (e) {
+        // Ignore
+    }
+    process.exit(0);
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);

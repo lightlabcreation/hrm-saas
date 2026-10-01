@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { generatePayslipPDF } = require('../utils/pdfGenerator');
+const whatsappService = require('../services/whatsappService');
 
 /**
  * Flexible & Country-Independent Contribution Calculation Helper
@@ -279,6 +280,16 @@ exports.generatePayroll = async (req, res) => {
             } catch (pdfError) {
                 console.error(`Failed to generate PDF for employee ${emp.id}:`, pdfError);
             }
+
+            // Trigger Async WhatsApp Payslip Notification
+            whatsappService.sendPayrollNotification(companyId, {
+                employeeId: emp.id,
+                employeeName: emp.name,
+                employeePhone: emp.phone,
+                month: `${startDate} to ${endDate}`,
+                netSalary: netSalary.toFixed(2),
+                currency: settings?.currency || 'INR'
+            });
 
             generated++;
         }

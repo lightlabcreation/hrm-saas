@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const whatsappService = require('../services/whatsappService');
 
 exports.getLeaves = async (req, res) => {
     try {
@@ -90,6 +91,17 @@ exports.applyLeave = async (req, res) => {
             );
         }
 
+        // Trigger Async WhatsApp Notification for Leave Application
+        whatsappService.sendLeaveNotification(company_id, {
+            type: 'APPLIED',
+            employeeId: employee_id,
+            employeeName: name,
+            leaveType: leave_type || 'Leave Request',
+            startDate: start_date,
+            endDate: end_date,
+            reason: reason || ''
+        });
+
         res.json({ message: 'Leave application submitted successfully' });
     } catch (err) {
         console.error('Error applying for leave:', err);
@@ -165,6 +177,18 @@ exports.updateLeaveStatus = async (req, res) => {
         }
 
         await connection.commit();
+
+        // Trigger Async WhatsApp Notification for Employee Leave Status Update
+        whatsappService.sendLeaveNotification(company_id, {
+            type: 'STATUS_UPDATED',
+            employeeId: leave.employee_id,
+            employeeName: leave.employee_name,
+            leaveType: leave.leave_type,
+            startDate: leave.start_date,
+            endDate: leave.end_date,
+            status: status
+        });
+
         res.json({ message: `Leave status updated to ${status}` });
     } catch (err) {
         await connection.rollback();
