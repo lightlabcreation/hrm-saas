@@ -3,4 +3,4 @@
 cmds = ["npm install --legacy-peer-deps"]
 
 [start]
-cmd = "npm run start"
+cmd = "node --dns-result-order=ipv4first server.js"
