@@ -891,6 +891,16 @@ server.listen(PORT, HOST, async () => {
     whatsappService.init(io).catch(err => {
         console.error('⚠️ WhatsApp auto-restore encountered an error:', err.message);
     });
+
+    // Support Dokploy's default port 3000 simultaneously
+    if (String(PORT) !== '3000') {
+        try {
+            const dokployDefaultServer = http.createServer(app);
+            dokployDefaultServer.listen(3000, HOST, () => {
+                console.log(`🚀 Also listening on http://${HOST}:3000 (Dokploy default port fallback)`);
+            }).on('error', () => {});
+        } catch (e) {}
+    }
 });
 
 // Process-level safety to prevent unhandled crashes causing Bad Gateway
