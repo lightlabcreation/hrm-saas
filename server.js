@@ -14,7 +14,8 @@ require('dotenv').config();
 require('./cron/expiryAlerts');
 const emailQueueWorker = require('./utils/emailQueueWorker');
 
-// Email queue worker will be started after database initialization in server.listen
+// Start the email queue background worker
+emailQueueWorker.startWorker();
 
 // HRM Backend Server Instance
 
@@ -202,7 +203,6 @@ app.use('/api/internal', internalRoutes);
 app.use('/api', apiRoutes);
 
 app.get('/', (req, res) => res.send('🚀 Kiaan HRM Pro Backend is Running...'));
-app.get('/health', (req, res) => res.status(200).json({ status: 'ok', uptime: process.uptime(), port: PORT }));
 
 io.on('connection', (socket) => {
     console.log('✅ Dashboard Connected');
@@ -218,7 +218,7 @@ const initDB = async () => {
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
             password: process.env.DB_PASSWORD,
-            port: Number(process.env.DB_PORT) || 3306
+            port: process.env.DB_PORT
         });
         await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\`;`);
         await connection.end();
@@ -871,45 +871,14 @@ app.use((err, req, res, next) => {
     });
 });
 
-const HOST = '0.0.0.0';
-server.listen(PORT, HOST, async () => {
-    console.log(`🚀 Kiaan HRM Pro Backend is running on http://${HOST}:${PORT}`);
-    
-    try {
-        await initDB();
-    } catch (err) {
-        console.error('❌ Failed to initialize database on startup:', err.message);
-    }
-
-    try {
-        emailQueueWorker.startWorker();
-    } catch (workerErr) {
-        console.error('⚠️ Failed to start email worker:', workerErr.message);
-    }
+server.listen(PORT, async () => {
+    await initDB();
+    console.log(`🚀 Kiaan HRM Pro Backend is running on port ${PORT}`);
     
     // Auto-restore active WhatsApp sessions safely in background
     whatsappService.init(io).catch(err => {
         console.error('⚠️ WhatsApp auto-restore encountered an error:', err.message);
     });
-
-    // Support Dokploy's default port 3000 simultaneously
-    if (String(PORT) !== '3000') {
-        try {
-            const dokployDefaultServer = http.createServer(app);
-            dokployDefaultServer.listen(3000, HOST, () => {
-                console.log(`🚀 Also listening on http://${HOST}:3000 (Dokploy default port fallback)`);
-            }).on('error', () => {});
-        } catch (e) {}
-    }
-});
-
-// Process-level safety to prevent unhandled crashes causing Bad Gateway
-process.on('uncaughtException', (err) => {
-    console.error('❌ Uncaught Exception:', err);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 // Graceful Shutdown

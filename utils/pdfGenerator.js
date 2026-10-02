@@ -1,29 +1,6 @@
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
-
-// Dynamic import helper for puppeteer (ESM module in CommonJS runtime)
-let puppeteerModule = null;
-let puppeteerPromise = null;
-
-async function getPuppeteer() {
-    if (puppeteerModule) return puppeteerModule;
-    if (!puppeteerPromise) {
-        puppeteerPromise = import('puppeteer')
-            .then(mod => {
-                puppeteerModule = mod.default || mod;
-                return puppeteerModule;
-            })
-            .catch(err => {
-                puppeteerPromise = null;
-                console.error('[PDF Generator] Failed to dynamically load puppeteer:', err);
-                throw err;
-            });
-    }
-    return puppeteerPromise;
-}
-
-// Background preload
-getPuppeteer().catch(() => {});
 
 const payslipsDir = path.join(__dirname, '..', 'uploads', 'payslips');
 
@@ -35,7 +12,6 @@ if (!fs.existsSync(payslipsDir)) {
 async function generatePayslipPDF(payroll, employee, companySettings) {
     let browser;
     try {
-        const puppeteer = await getPuppeteer();
         browser = await puppeteer.launch({
             headless: true,
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null,

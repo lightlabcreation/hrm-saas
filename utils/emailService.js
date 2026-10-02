@@ -217,7 +217,7 @@ async function sendWelcomeTrialEmail({ to, name, companyName, email, password, t
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to HRM Software Pro - 7 Days Free Trial</title>
+    <title>Welcome to HR Pilot Pro - 7 Days Free Trial</title>
     <style>
         body { margin: 0; padding: 0; background-color: #0b0f19; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #cbd5e1; }
         .wrapper { width: 100%; max-width: 620px; margin: 0 auto; background-color: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; overflow: hidden; margin-top: 24px; margin-bottom: 24px; }
@@ -241,7 +241,7 @@ async function sendWelcomeTrialEmail({ to, name, companyName, email, password, t
 <body>
     <div class="wrapper">
         <div class="header">
-            <h1 class="logo-text">⚡ HRM SOFTWARE PRO</h1>
+            <h1 class="logo-text">⚡ HR PILOT PRO</h1>
             <div class="logo-sub">${senderName}</div>
             <div class="badge">🎉 7-Day Free Trial Activated</div>
         </div>
@@ -511,7 +511,7 @@ async function sendPasswordResetOtpEmail({ to, name, otp }) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset Code</title>
+    <title>Password Reset Code - HR Pilot Pro</title>
     <style>
         body { margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f8fafc; }
         .container { max-width: 580px; margin: 30px auto; background: #1e293b; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
@@ -528,14 +528,14 @@ async function sendPasswordResetOtpEmail({ to, name, otp }) {
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🔐 HRM Software Security</div>
+            <div class="logo">🔐 HR Pilot Pro Security</div>
             <div style="font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 600;">Password Reset Code</div>
         </div>
 
         <div class="content">
             <div class="greeting">Hello ${name || 'User'},</div>
             <p style="font-size: 14px; color: #cbd5e1; line-height: 1.6; margin: 0 0 16px 0;">
-                We received a request to reset the password for your HRM Software account (<strong>${to}</strong>).
+                We received a request to reset the password for your HR Pilot Pro account (<strong>${to}</strong>).
             </p>
 
             <div class="otp-box">
@@ -567,7 +567,7 @@ async function sendPasswordResetOtpEmail({ to, name, otp }) {
         await sendSystemEmail({
             to: to,
             toName: name || to,
-            subject: `🔐 Your 6-Digit Password Reset Code: ${otp} - HRM Software`,
+            subject: `🔐 Your 6-Digit Password Reset Code: ${otp} - HR Pilot Pro`,
             htmlContent: htmlContent
         });
         return true;
@@ -589,7 +589,7 @@ async function sendPasswordChangedConfirmationEmail({ to, name }) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Changed Successfully</title>
+    <title>Password Changed Successfully - HR Pilot Pro</title>
     <style>
         body { margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #f8fafc; }
         .container { max-width: 580px; margin: 30px auto; background: #1e293b; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
@@ -606,7 +606,7 @@ async function sendPasswordChangedConfirmationEmail({ to, name }) {
         <div class="content">
             <p style="font-size: 15px; color: #ffffff; margin-top: 0;">Hello <strong>${name || 'User'}</strong>,</p>
             <p style="font-size: 14px; color: #cbd5e1; line-height: 1.6;">
-                The password for your HRM Software account (<strong>${to}</strong>) has been updated successfully.
+                The password for your HR Pilot Pro account (<strong>${to}</strong>) has been updated successfully.
             </p>
             <p style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
                 You can now log in to your dashboard with your new password.
@@ -629,7 +629,7 @@ async function sendPasswordChangedConfirmationEmail({ to, name }) {
         await sendSystemEmail({
             to: to,
             toName: name || to,
-            subject: `✅ Security Alert: Your Password Was Changed - HRM Software`,
+            subject: `✅ Security Alert: Your Password Was Changed - HR Pilot Pro`,
             htmlContent: htmlContent
         });
         return true;
