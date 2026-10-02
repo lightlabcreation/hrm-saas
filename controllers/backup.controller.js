@@ -526,12 +526,11 @@ exports.saveBackupSchedule = async (req, res) => {
 async function runScheduledAutoBackups() {
     try {
         const [schedules] = await db.execute(`
-            SELECT s.*, u.name as admin_name 
+            SELECT s.*, 
+                   (SELECT u.name FROM users u WHERE (u.company_id = s.company_id OR u.id = s.company_id) AND u.role IN ('admin', 'MasterAdmin') LIMIT 1) AS admin_name 
             FROM company_backup_schedules s
-            LEFT JOIN users u ON (u.company_id = s.company_id OR u.id = s.company_id) AND u.role IN ('admin', 'MasterAdmin')
             WHERE s.is_enabled = 1 
               AND (s.last_run_at IS NULL OR TIMESTAMPDIFF(DAY, s.last_run_at, NOW()) >= s.frequency_days)
-            GROUP BY s.company_id
         `);
 
         if (!schedules || schedules.length === 0) return;
