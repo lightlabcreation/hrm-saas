@@ -4,15 +4,38 @@ const qrcode = require('qrcode');
 const pino = require('pino');
 const db = require('../config/db');
 
-// Baileys imports
-const {
-    default: makeWASocket,
-    DisconnectReason,
-    useMultiFileAuthState,
-    makeCacheableSignalKeyStore,
-    fetchLatestBaileysVersion,
-    Browsers
-} = require('@whiskeysockets/baileys');
+// Dynamic import helper for @whiskeysockets/baileys (ESM package in CommonJS runtime)
+let baileysModule = null;
+let baileysPromise = null;
+
+async function getBaileys() {
+    if (baileysModule) return baileysModule;
+    if (!baileysPromise) {
+        baileysPromise = import('@whiskeysockets/baileys')
+            .then((mod) => {
+                baileysModule = {
+                    makeWASocket: mod.default || mod.makeWASocket,
+                    DisconnectReason: mod.DisconnectReason || {},
+                    useMultiFileAuthState: mod.useMultiFileAuthState,
+                    makeCacheableSignalKeyStore: mod.makeCacheableSignalKeyStore,
+                    fetchLatestBaileysVersion: mod.fetchLatestBaileysVersion,
+                    Browsers: mod.Browsers,
+                    raw: mod
+                };
+                return baileysModule;
+            })
+            .catch((err) => {
+                baileysPromise = null;
+                console.error('[WhatsApp Service] Failed to dynamically load @whiskeysockets/baileys:', err);
+                throw err;
+            });
+    }
+    return baileysPromise;
+}
+
+// Background pre-fetch so it's ready when needed
+getBaileys().catch(() => {});
+
 
 class WhatsAppService {
     constructor() {
@@ -199,6 +222,15 @@ class WhatsAppService {
         }
 
         try {
+            const {
+                makeWASocket,
+                DisconnectReason,
+                useMultiFileAuthState,
+                makeCacheableSignalKeyStore,
+                fetchLatestBaileysVersion,
+                Browsers
+            } = await getBaileys();
+
             const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
             let version = [2, 3000, 1043857760]; // Latest stable fallback
             try {
@@ -783,6 +815,13 @@ class WhatsAppService {
     async init(ioInstance) {
         if (ioInstance) {
             this.setIO(ioInstance);
+        }
+
+        try {
+            await getBaileys();
+        } catch (loadErr) {
+            console.error('WhatsApp Baileys module load error during init:', loadErr.message);
+            return;
         }
 
         try {
