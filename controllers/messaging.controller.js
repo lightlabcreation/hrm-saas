@@ -275,6 +275,24 @@ _Sent by ${senderName} • ${companyName}_`;
                     whatsappFailedCount++;
                 }
             }
+
+            // --- C. IN-APP NOTIFICATION CHANNEL ---
+            try {
+                const [userRows] = await db.execute(
+                    'SELECT id FROM users WHERE (employee_id = ? OR (email = ? AND email != "")) AND company_id = ? LIMIT 1',
+                    [emp.id, emp.email || '', companyId]
+                );
+                const empUserId = userRows.length > 0 ? userRows[0].id : null;
+                const notifType = priority === 'urgent' ? 'error' : (priority === 'important' ? 'warning' : 'info');
+                const notifTitle = `${priorityEmoji} ${subject}`;
+
+                await db.execute(
+                    `INSERT INTO in_app_notifications (company_id, user_id, title, message, type) VALUES (?, ?, ?, ?, ?)`,
+                    [companyId, empUserId, notifTitle, personalizedBody, notifType]
+                );
+            } catch (notifErr) {
+                console.warn(`[Messaging] In-app notification creation failed for emp ${emp.id}:`, notifErr.message);
+            }
         }
 
         // 5. Store in broadcast_messages table

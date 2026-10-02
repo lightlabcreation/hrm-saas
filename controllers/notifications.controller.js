@@ -78,3 +78,50 @@ exports.markAllAsRead = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.clearAllNotifications = async (req, res) => {
+    try {
+        const { id: userId, company_id: companyId, role } = req.user;
+        const isSuperadmin = role.toLowerCase().includes('master') || role.toLowerCase() === 'superadmin';
+
+        let query = 'DELETE FROM in_app_notifications WHERE ';
+        let params = [];
+
+        if (isSuperadmin) {
+            query += 'company_id IS NULL AND (user_id IS NULL OR user_id = ?) ';
+            params.push(userId);
+        } else {
+            query += 'company_id = ? AND (user_id IS NULL OR user_id = ?) ';
+            params.push(companyId, userId);
+        }
+
+        await db.execute(query, params);
+        res.json({ message: 'All notifications cleared' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.deleteNotification = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { company_id: companyId, role } = req.user;
+        const isSuperadmin = role.toLowerCase().includes('master') || role.toLowerCase() === 'superadmin';
+
+        let query = 'DELETE FROM in_app_notifications WHERE id = ?';
+        let params = [id];
+
+        if (isSuperadmin) {
+            query += ' AND company_id IS NULL';
+        } else {
+            query += ' AND company_id = ?';
+            params.push(companyId);
+        }
+
+        await db.execute(query, params);
+        res.json({ message: 'Notification deleted' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+

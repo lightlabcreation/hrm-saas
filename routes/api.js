@@ -69,6 +69,8 @@ router.get('/public/site-info', settingsController.getSiteInfo);
 router.get('/notifications', auth, notificationsController.getNotifications);
 router.put('/notifications/read-all', auth, notificationsController.markAllAsRead);
 router.put('/notifications/:id/read', auth, notificationsController.markAsRead);
+router.delete('/notifications/clear-all', auth, notificationsController.clearAllNotifications);
+router.delete('/notifications/:id', auth, notificationsController.deleteNotification);
 
 // Public Plans
 router.get('/plans', settingsController.getPlans);
