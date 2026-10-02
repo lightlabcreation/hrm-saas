@@ -1,0 +1,12 @@
+node_modules
+.git
+.gitignore
+.env
+.env.*
+uploads
+sessions
+backups
+scratch
+npm-debug.log
+yarn-error.log
+*.log

@@ -1,0 +1,9 @@
+# Nixpacks configuration for Dokploy
+[phases.install]
+cmds = ["npm install --legacy-peer-deps"]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "node --experimental-require-module --dns-result-order=ipv4first server.js"

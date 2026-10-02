@@ -1,6 +1,10 @@
 node_modules/
 .env
 uploads/
+sessions/
+backups/
+scratch/
 npm-debug.log
 yarn-error.log
 .DS_Store
+*.log
