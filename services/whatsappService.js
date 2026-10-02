@@ -548,7 +548,7 @@ class WhatsAppService {
         } catch (e) {
             // fallback
         }
-        return 'HRM Software Pro';
+        return 'HR PILOT PRO SYSTEM';
     }
 
     /**

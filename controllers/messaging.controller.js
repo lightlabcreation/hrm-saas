@@ -76,7 +76,7 @@ exports.getRecipientsData = async (req, res) => {
                 email: {
                     configured: emailSettings.length > 0 && !!emailSettings[0].is_active,
                     senderEmail: emailSettings[0]?.sender_email || 'System Default',
-                    senderName: emailSettings[0]?.sender_name || 'HRM Software'
+                    senderName: emailSettings[0]?.sender_name || 'HR PILOT PRO SYSTEM'
                 }
             }
         });
@@ -209,7 +209,7 @@ exports.sendMessage = async (req, res) => {
             <p style="font-size: 12px; color: #64748b; margin-top: 24px;">Sent by ${senderName} • ${companyName}</p>
         </div>
         <div class="footer">
-            &copy; ${new Date().getFullYear()} ${companyName}. HRM Software Automated Communication.
+            &copy; ${new Date().getFullYear()} ${companyName}. HR PILOT PRO SYSTEM Automated Communication.
         </div>
     </div>
 </body>

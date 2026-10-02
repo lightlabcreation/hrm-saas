@@ -308,7 +308,7 @@ async function sendWelcomeTrialEmail({ to, name, companyName, email, password, t
         await sendSystemEmail({
             to: to,
             toName: name,
-            subject: `🎉 Welcome to HRM Software Pro - Your 7-Day Free Trial is Active!`,
+            subject: `🎉 Welcome to HR Pilot Pro - Your 7-Day Free Trial is Active!`,
             htmlContent: htmlContent
         });
         return true;
@@ -342,7 +342,7 @@ async function sendSubscriptionSuccessEmail({ to, name, companyName, email, pass
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subscription Activated - HRM Software Pro</title>
+    <title>Subscription Activated - HR PILOT PRO SYSTEM</title>
     <style>
         body { margin: 0; padding: 0; background-color: #0b0f19; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #cbd5e1; }
         .wrapper { width: 100%; max-width: 620px; margin: 0 auto; background-color: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; overflow: hidden; margin-top: 24px; margin-bottom: 24px; }
@@ -364,7 +364,7 @@ async function sendSubscriptionSuccessEmail({ to, name, companyName, email, pass
 <body>
     <div class="wrapper">
         <div class="header">
-            <h1 class="logo-text">⚡ HRM SOFTWARE PRO</h1>
+            <h1 class="logo-text">⚡ HR PILOT PRO SYSTEM</h1>
             <div class="logo-sub">${senderName}</div>
             <div class="badge">💳 Subscription Payment Confirmed</div>
         </div>
@@ -372,7 +372,7 @@ async function sendSubscriptionSuccessEmail({ to, name, companyName, email, pass
         <div class="content">
             <h2 class="greeting">Thank You ${name}! 🎉</h2>
             <p class="lead">
-                Your subscription for <strong style="color: #ffffff;">${companyName}</strong> has been successfully activated. Thank you for partnering with HRM Software Pro for your enterprise workforce management.
+                Your subscription for <strong style="color: #ffffff;">${companyName}</strong> has been successfully activated. Thank you for partnering with HR PILOT PRO SYSTEM for your enterprise workforce management.
             </p>
 
             <div class="cred-box">

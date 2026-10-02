@@ -84,9 +84,9 @@ exports.testEmailConnection = async (req, res) => {
         // If password is a Brevo REST API Key (starts with xkeysib-)
         if (password && password.startsWith('xkeysib-')) {
             const payload = JSON.stringify({
-                sender: { name: settings.sender_name || 'HRM Software', email: settings.sender_email },
+                sender: { name: settings.sender_name || 'HR PILOT PRO SYSTEM', email: settings.sender_email },
                 to: [{ email: recipient }],
-                subject: 'Test Email from HRM Software',
+                subject: 'Test Email from HR PILOT PRO SYSTEM',
                 htmlContent: '<p>Your Brevo API Key is working perfectly! You are now ready to send e-payslips and automated messages.</p>'
             });
 
@@ -140,9 +140,9 @@ exports.testEmailConnection = async (req, res) => {
         await transporter.verify(); // Test connection
         
         await transporter.sendMail({
-            from: `"${settings.sender_name || 'HRM Software'}" <${settings.sender_email}>`,
+            from: `"${settings.sender_name || 'HR PILOT PRO SYSTEM'}" <${settings.sender_email}>`,
             to: recipient,
-            subject: 'Test Email from HRM Software',
+            subject: 'Test Email from HR PILOT PRO SYSTEM',
             text: 'Your SMTP settings are working perfectly! You are now ready to send e-payslips and notifications.'
         });
 

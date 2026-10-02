@@ -157,7 +157,7 @@ exports.generateBackup = async (req, res) => {
                 const backupHtml = `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff;">
                         <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 24px; border-radius: 12px; text-align: center; color: white;">
-                            <h2 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.5px;">📦 HRM Software Pro System Backup</h2>
+                            <h2 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.5px;">📦 HR PILOT PRO SYSTEM Backup</h2>
                             <p style="margin: 6px 0 0 0; opacity: 0.9; font-size: 13px;">${hasDateRange ? `Date Range: ${startDate} to ${endDate}` : 'Full Database Snapshot'}</p>
                         </div>
                         <div style="padding: 24px 8px 8px 8px; color: #334155; font-size: 14px; line-height: 1.6;">
@@ -189,7 +189,7 @@ exports.generateBackup = async (req, res) => {
                     await transporter.sendMail({
                         from: `"${s.sender_name || 'HR Department'}" <${s.sender_email || s.smtp_user}>`,
                         to: targetEmail,
-                        subject: `📦 HRM Software Pro - Database Backup (${new Date().toLocaleDateString()})`,
+                        subject: `📦 HR PILOT PRO SYSTEM - Database Backup (${new Date().toLocaleDateString()})`,
                         html: backupHtml,
                         attachments: [
                             {
@@ -203,7 +203,7 @@ exports.generateBackup = async (req, res) => {
                     await sendSystemEmail({
                         to: targetEmail,
                         toName: req.user.name || 'Admin',
-                        subject: `📦 HRM Software Pro - Database Backup (${new Date().toLocaleDateString()})`,
+                        subject: `📦 HR PILOT PRO SYSTEM - Database Backup (${new Date().toLocaleDateString()})`,
                         htmlContent: backupHtml,
                         attachments: [
                             {
@@ -345,7 +345,7 @@ exports.sendBackupToEmail = async (req, res) => {
         const backupHtml = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff;">
                 <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 24px; border-radius: 12px; text-align: center; color: white;">
-                    <h2 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.5px;">📦 HRM Software Pro System Backup</h2>
+                    <h2 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.5px;">📦 HR PILOT PRO SYSTEM Backup</h2>
                     <p style="margin: 6px 0 0 0; opacity: 0.9; font-size: 13px;">${hasDateRange ? `Date Range: ${startDate} to ${endDate}` : 'Full Database Snapshot'}</p>
                 </div>
                 <div style="padding: 24px 8px 8px 8px; color: #334155; font-size: 14px; line-height: 1.6;">
@@ -378,7 +378,7 @@ exports.sendBackupToEmail = async (req, res) => {
                 await transporter.sendMail({
                     from: `"${s.sender_name || 'HR Department'}" <${s.sender_email || s.smtp_user}>`,
                     to: targetEmail,
-                    subject: `📦 HRM Software Pro - Database Backup (${new Date().toLocaleDateString()})`,
+                    subject: `📦 HR PILOT PRO SYSTEM - Database Backup (${new Date().toLocaleDateString()})`,
                     html: backupHtml,
                     attachments: [
                         {
@@ -399,7 +399,7 @@ exports.sendBackupToEmail = async (req, res) => {
                 const sysRes = await sendSystemEmail({
                     to: targetEmail,
                     toName: req.user.name || 'Administrator',
-                    subject: `📦 HRM Software Pro - Database Backup (${new Date().toLocaleDateString()})`,
+                    subject: `📦 HR PILOT PRO SYSTEM - Database Backup (${new Date().toLocaleDateString()})`,
                     htmlContent: backupHtml,
                     attachments: [
                         {
@@ -626,7 +626,7 @@ async function runScheduledAutoBackups() {
                     await transporter.sendMail({
                         from: `"${s.sender_name || 'HR Department'}" <${s.sender_email || s.smtp_user}>`,
                         to: targetEmail,
-                        subject: `⏰ Automated System Backup (Every ${sched.frequency_days} Days) - HRM Software`,
+                        subject: `⏰ Automated System Backup (Every ${sched.frequency_days} Days) - HR PILOT PRO SYSTEM`,
                         html: backupHtml,
                         attachments: [{ filename, content: fileContent }]
                     });
@@ -634,7 +634,7 @@ async function runScheduledAutoBackups() {
                     await sendSystemEmail({
                         to: targetEmail,
                         toName: sched.admin_name || 'Admin',
-                        subject: `⏰ Automated System Backup (Every ${sched.frequency_days} Days) - HRM Software`,
+                        subject: `⏰ Automated System Backup (Every ${sched.frequency_days} Days) - HR PILOT PRO SYSTEM`,
                         htmlContent: backupHtml,
                         attachments: [{ filename, content: fileContent }]
                     });
