@@ -313,7 +313,17 @@ exports.getSiteInfo = async (req, res) => {
                     privacy_policy, terms_conditions, copyright_text, whatsapp_number
              FROM global_settings LIMIT 1`
         );
-        res.json(rows[0] || {});
+        let site = rows[0] || {};
+        if (!site.company_logo || site.company_logo.startsWith('data:image')) {
+            site.company_logo = '/logo.png';
+        }
+        if (!site.platform_name || site.platform_name === 'HRM Software Pro' || site.platform_name === 'Nexus HRM Pro') {
+            site.platform_name = 'HR Pilot Pro';
+        }
+        if (!site.company_name || site.company_name === 'HRM Software Pro' || site.company_name === 'Nexus HRM Pro') {
+            site.company_name = 'HR Pilot Pro';
+        }
+        res.json(site);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

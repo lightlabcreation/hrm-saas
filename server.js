@@ -425,9 +425,20 @@ const initDB = async () => {
             )
         `);
 
-        const [gsRows] = await db.execute('SELECT id FROM global_settings LIMIT 1');
+        const [gsRows] = await db.execute('SELECT id, platform_name, company_logo FROM global_settings LIMIT 1');
         if (gsRows.length === 0) {
-            await db.execute('INSERT INTO global_settings (platform_name, support_email) VALUES ("Nexus HRM Pro", "support@nexushrm.com")');
+            await db.execute('INSERT INTO global_settings (platform_name, company_name, company_logo, support_email) VALUES ("HR Pilot Pro", "HR Pilot Pro", "/logo.png", "support@hrpilotpro.org")');
+        } else {
+            await db.execute(`
+                UPDATE global_settings 
+                SET platform_name = 'HR Pilot Pro',
+                    company_name = 'HR Pilot Pro',
+                    company_logo = '/logo.png'
+                WHERE platform_name IN ('HRM Software Pro', 'Nexus HRM Pro')
+                   OR company_logo LIKE '%data:image%'
+                   OR company_logo = ''
+                   OR company_logo IS NULL
+            `);
         }
 
         console.log('🔄 Checking database columns...');
