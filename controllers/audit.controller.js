@@ -174,3 +174,53 @@ exports.getAuditStats = async (req, res) => {
         return res.status(500).json({ message: 'Failed to fetch audit statistics', error: err.message });
     }
 };
+
+/**
+ * Delete a Single Audit Log Record
+ */
+exports.deleteAuditLog = async (req, res) => {
+    try {
+        const companyId = req.user.company_id;
+        const { id } = req.params;
+
+        if (!companyId) {
+            return res.status(400).json({ message: 'Company context missing.' });
+        }
+
+        const [result] = await db.execute(
+            'DELETE FROM audit_logs WHERE id = ? AND company_id = ?',
+            [id, companyId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Audit log entry not found or access denied.' });
+        }
+
+        return res.json({ success: true, message: 'Audit log entry deleted successfully.' });
+    } catch (err) {
+        console.error('Error deleting audit log:', err);
+        return res.status(500).json({ message: 'Failed to delete audit log entry', error: err.message });
+    }
+};
+
+/**
+ * Clear all Audit Logs for the company
+ */
+exports.clearAuditLogs = async (req, res) => {
+    try {
+        const companyId = req.user.company_id;
+        if (!companyId) {
+            return res.status(400).json({ message: 'Company context missing.' });
+        }
+
+        await db.execute(
+            'DELETE FROM audit_logs WHERE company_id = ?',
+            [companyId]
+        );
+
+        return res.json({ success: true, message: 'All audit logs cleared successfully.' });
+    } catch (err) {
+        console.error('Error clearing audit logs:', err);
+        return res.status(500).json({ message: 'Failed to clear audit logs', error: err.message });
+    }
+};

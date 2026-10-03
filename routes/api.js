@@ -208,6 +208,8 @@ router.post('/settings/whatsapp/test', auth, adminOnly, whatsappController.sendT
 const auditController = require('../controllers/audit.controller');
 router.get('/audit-logs', auth, adminOnly, auditController.getAuditLogs);
 router.get('/audit-logs/stats', auth, adminOnly, auditController.getAuditStats);
+router.delete('/audit-logs/clear-all', auth, adminOnly, auditController.clearAuditLogs);
+router.delete('/audit-logs/:id', auth, adminOnly, auditController.deleteAuditLog);
 
 // Announcements & Personal Messages (Admin Only)
 const messagingController = require('../controllers/messaging.controller');
