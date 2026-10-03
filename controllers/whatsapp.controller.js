@@ -117,7 +117,7 @@ exports.sendTestMessage = async (req, res) => {
         }
 
         const companyName = await whatsappService.getCompanyName(companyId);
-        const testText = message || `*${companyName}*\n\n✅ *WhatsApp Connectivity Test*\n\nYour WhatsApp notifications are successfully configured and working.\n\n_Sent from Nexus HRM Pro._`;
+        const testText = message || `*${companyName}*\n\n✅ *WhatsApp Connectivity Test*\n\nYour WhatsApp notifications are successfully configured and working.\n\n_Sent from HR Pilot Pro._`;
 
         const result = await whatsappService.sendMessage(companyId, recipientPhone, testText, {
             recipientName: req.user.name || 'Admin',

@@ -73,7 +73,7 @@ async function exportDatabaseSql({ startDate, endDate, tempFilePath }) {
         'company_backup_schedules', 'attendance', 'payroll', 'leaves', 'claims'
     ];
 
-    let sqlOutput = `-- Nexus HRM Pro Database Backup\n`;
+    let sqlOutput = `-- HR Pilot Pro Database Backup\n`;
     if (startDate && endDate) {
         sqlOutput += `-- Filter: Custom Date Range (${startDate} to ${endDate})\n`;
     } else {
@@ -560,7 +560,7 @@ async function runScheduledAutoBackups() {
                     });
                 } catch (e) {
                     const tables = ['companies', 'users', 'employees', 'attendance', 'payroll', 'leaves', 'claims', 'settings', 'global_settings', 'geofences', 'kpis', 'public_holidays', 'company_email_settings', 'company_backup_schedules'];
-                    let sqlOutput = `-- Nexus HRM Pro Automated Scheduled Backup (${sched.frequency_days} Days Cycle)\n-- Generated on: ${new Date().toISOString()}\n\n`;
+                    let sqlOutput = `-- HR Pilot Pro Automated Scheduled Backup (${sched.frequency_days} Days Cycle)\n-- Generated on: ${new Date().toISOString()}\n\n`;
 
                     for (const table of tables) {
                         try {

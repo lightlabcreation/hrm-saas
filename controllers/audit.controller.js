@@ -53,6 +53,9 @@ exports.getAuditLogs = async (req, res) => {
         const total = countResult[0]?.total || 0;
 
         // Fetch Paginated Logs
+        const safeLimit = Math.max(1, parseInt(limit, 10) || 20);
+        const safeOffset = Math.max(0, parseInt(offset, 10) || 0);
+
         const dataQuery = `
             SELECT 
                 a.id,
@@ -69,9 +72,9 @@ exports.getAuditLogs = async (req, res) => {
             LEFT JOIN users u ON a.admin_id = u.id
             WHERE ${whereSql}
             ORDER BY a.created_at DESC
-            LIMIT ? OFFSET ?
+            LIMIT ${safeLimit} OFFSET ${safeOffset}
         `;
-        const [rows] = await db.execute(dataQuery, [...queryParams, limit, offset]);
+        const [rows] = await db.execute(dataQuery, queryParams);
 
         // Parse JSON details if applicable
         const formattedLogs = rows.map(log => {

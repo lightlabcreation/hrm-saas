@@ -341,7 +341,7 @@ exports.register = async (req, res) => {
             const [company] = await connection.execute('SELECT id FROM companies WHERE id = ?', [existingUsers[0].company_id]);
             if (company.length > 0) {
                 await connection.rollback();
-                return res.status(400).json({ message: 'You have already taken your Free Trial! Please purchase a paid plan to continue using Nexus HRM.' });
+                return res.status(400).json({ message: 'You have already taken your Free Trial! Please purchase a paid plan to continue using HR Pilot Pro.' });
             } else {
                 // Orphaned user from deleted company -> clean it up
                 await connection.execute('DELETE FROM users WHERE id = ?', [existingUsers[0].id]);
@@ -351,7 +351,7 @@ exports.register = async (req, res) => {
         const [existingCompanyEmail] = await connection.execute('SELECT id, company_name FROM companies WHERE LOWER(email) = ?', [cleanEmail]);
         if (existingCompanyEmail.length > 0) {
             await connection.rollback();
-            return res.status(400).json({ message: 'You have already taken your Free Trial! Please purchase a paid plan to continue using Nexus HRM.' });
+            return res.status(400).json({ message: 'You have already taken your Free Trial! Please purchase a paid plan to continue using HR Pilot Pro.' });
         }
 
         // 2. Check if mobile number already claimed a Free Trial / company
@@ -362,7 +362,7 @@ exports.register = async (req, res) => {
         );
         if (existingCompanyPhone.length > 0) {
             await connection.rollback();
-            return res.status(400).json({ message: 'You have already taken your Free Trial with this mobile number! Please purchase a paid plan to continue using Nexus HRM.' });
+            return res.status(400).json({ message: 'You have already taken your Free Trial with this mobile number! Please purchase a paid plan to continue using HR Pilot Pro.' });
         }
 
         const [existingReqPhone] = await connection.execute(
@@ -371,7 +371,7 @@ exports.register = async (req, res) => {
         );
         if (existingReqPhone.length > 0) {
             await connection.rollback();
-            return res.status(400).json({ message: 'You have already taken your Free Trial with this mobile number! Please purchase a paid plan to continue using Nexus HRM.' });
+            return res.status(400).json({ message: 'You have already taken your Free Trial with this mobile number! Please purchase a paid plan to continue using HR Pilot Pro.' });
         }
 
         // 3. Hash password

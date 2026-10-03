@@ -256,9 +256,9 @@ exports.updateGlobalSettings = async (req, res) => {
                     privacy_policy=?, terms_conditions=?, copyright_text=?, whatsapp_number=?
                 WHERE id=?`,
                 [
-                    platform_name !== undefined ? platform_name : (current.platform_name || 'Nexus HRM Pro'),
+                    platform_name !== undefined ? platform_name : (current.platform_name || 'HR Pilot Pro'),
                     powered_by !== undefined ? powered_by : (current.powered_by || 'Kiaan Technology'),
-                    support_email !== undefined ? support_email : (current.support_email || 'support@nexushrm.com'),
+                    support_email !== undefined ? support_email : (current.support_email || 'support@hrpilotpro.com'),
                     timezone !== undefined ? timezone : (current.timezone || 'Asia/Kolkata'),
                     currency !== undefined ? currency : (current.currency || 'INR'),
                     date_format !== undefined ? date_format : (current.date_format || 'DD/MM/YYYY'),
@@ -292,7 +292,7 @@ exports.updateGlobalSettings = async (req, res) => {
                      privacy_policy, terms_conditions, copyright_text, whatsapp_number) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                    platform_name || 'Nexus HRM Pro', powered_by || 'Kiaan Technology', support_email || 'support@nexushrm.com', timezone || 'Asia/Kolkata', currency || 'INR', date_format || 'DD/MM/YYYY', language || 'English', country || 'India', notifJson,
+                    platform_name || 'HR Pilot Pro', powered_by || 'Kiaan Technology', support_email || 'support@hrpilotpro.com', timezone || 'Asia/Kolkata', currency || 'INR', date_format || 'DD/MM/YYYY', language || 'English', country || 'India', notifJson,
                     company_name || null, company_logo || null, company_address || null, contact_number || null, about_us || null, company_website || 'https://kiaantechnology.com/',
                     social_linkedin || null, social_facebook || null, social_instagram || null, social_twitter || null, social_youtube || null,
                     privacy_policy || null, terms_conditions || null, copyright_text || null, whatsapp_number || null

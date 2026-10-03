@@ -385,8 +385,8 @@ const initDB = async () => {
         await db.execute(`
             CREATE TABLE IF NOT EXISTS global_settings (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                platform_name VARCHAR(255) DEFAULT 'Nexus HRM Pro',
-                support_email VARCHAR(255) DEFAULT 'support@nexushrm.com',
+                platform_name VARCHAR(255) DEFAULT 'HR Pilot Pro',
+                support_email VARCHAR(255) DEFAULT 'support@hrpilotpro.org',
                 timezone VARCHAR(100) DEFAULT 'Asia/Kolkata',
                 currency VARCHAR(20) DEFAULT 'INR',
                 date_format VARCHAR(50) DEFAULT 'DD/MM/YYYY',
